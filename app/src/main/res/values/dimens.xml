@@ -8,8 +8,10 @@
     <dimen name="space_xl">24dp</dimen>
     <dimen name="space_xxl">32dp</dimen>
 
-    <!-- Raggi standard per card e bottoni -->
-    <dimen name="radius_sm">16dp</dimen>
-    <dimen name="radius_md">24dp</dimen>
-    <dimen name="radius_lg">28dp</dimen>
+    <!-- Scala delle forme Material 3 Expressive: 5 livelli di arrotondamento -->
+    <dimen name="radius_xs">4dp</dimen>
+    <dimen name="radius_sm">8dp</dimen>
+    <dimen name="radius_md">12dp</dimen>
+    <dimen name="radius_lg">16dp</dimen>
+    <dimen name="radius_xl">28dp</dimen>
 </resources>

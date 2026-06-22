@@ -54,4 +54,9 @@
 
     <color name="grad_pending_start">#6C6694</color>
     <color name="grad_pending_end">#5C5680</color>
+
+    <!-- Sfondi pieni dedicati per schermata, versione scura -->
+    <color name="surface_home">#2A2640</color>
+    <color name="surface_detail">#4A2E22</color>
+    <color name="surface_tratta">#1E2D4A</color>
 </resources>

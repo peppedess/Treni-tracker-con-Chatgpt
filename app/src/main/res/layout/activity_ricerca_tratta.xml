@@ -4,13 +4,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorSurface">
+    android:background="@color/surface_tratta">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:background="@color/surface_tratta"
         app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="?attr/colorOnSurface"
+        app:titleTextColor="?attr/colorOnSurface"
         app:title="@string/ricerca_per_tratta"
         app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge" />
 
@@ -21,7 +24,7 @@
         app:cardElevation="0dp"
         app:strokeWidth="0dp"
         app:cardBackgroundColor="?attr/colorPrimaryContainer"
-        app:cardCornerRadius="@dimen/radius_lg">
+        app:cardCornerRadius="@dimen/radius_xl">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -79,7 +82,7 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="@dimen/space_lg"
                 android:text="@string/btn_cerca"
-                app:cornerRadius="@dimen/radius_lg"
+                app:cornerRadius="@dimen/radius_xl"
                 app:icon="@drawable/ic_search"
                 app:iconGravity="textStart" />
 

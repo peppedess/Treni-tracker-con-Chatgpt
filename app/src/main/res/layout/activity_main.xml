@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@color/surface_home">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
+        android:background="@color/surface_home"
         app:elevation="0dp">
 
         <FrameLayout
@@ -16,12 +16,12 @@
             android:layout_height="wrap_content">
 
             <View
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="78dp"
+                android:layout_height="56dp"
                 android:layout_gravity="top|start"
-                android:layout_marginTop="14dp"
-                android:layout_marginStart="20dp"
-                android:alpha="0.28"
+                android:layout_marginTop="18dp"
+                android:layout_marginStart="16dp"
+                android:alpha="0.35"
                 android:background="@drawable/shape_decor_circle" />
 
             <LinearLayout
@@ -49,9 +49,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/app_name"
-                            android:textSize="30sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="-0.01"
+                            style="@style/TT.Display"
                             android:textColor="?attr/colorOnSurface" />
 
                         <TextView
@@ -59,10 +57,8 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="@string/app_subtitle"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="-0.01"
-                            android:textColor="?attr/colorPrimary" />
+                            style="@style/TT.LabelLarge"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
 
                     </LinearLayout>
 
@@ -129,7 +125,7 @@
                     android:layout_marginBottom="@dimen/space_xl"
                     app:cardElevation="4dp"
                     app:cardBackgroundColor="@android:color/transparent"
-                    app:cardCornerRadius="@dimen/radius_lg">
+                    app:cardCornerRadius="@dimen/radius_xl">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -168,7 +164,7 @@
                             android:text="@string/btn_cerca"
                             android:textColor="?attr/colorPrimary"
                             app:backgroundTint="@android:color/white"
-                            app:cornerRadius="@dimen/radius_lg"
+                            app:cornerRadius="@dimen/radius_xl"
                             app:icon="@drawable/ic_search"
                             app:iconTint="?attr/colorPrimary"
                             app:iconGravity="textStart" />

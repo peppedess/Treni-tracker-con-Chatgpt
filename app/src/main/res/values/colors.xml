@@ -56,4 +56,9 @@
 
     <color name="grad_pending_start">#EAE6F5</color>
     <color name="grad_pending_end">#DCD4F0</color>
+
+    <!-- Sfondi pieni dedicati per schermata, in stile riferimento -->
+    <color name="surface_home">#EDE9F7</color>
+    <color name="surface_detail">#FBDFD4</color>
+    <color name="surface_tratta">#DCE7FA</color>
 </resources>

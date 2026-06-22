@@ -10,6 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.dynamicanimation.animation.DynamicAnimation
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.Constraints
@@ -83,17 +86,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnCerca.setOnClickListener {
-            it.animate()
-                .scaleX(0.93f).scaleY(0.93f)
-                .setDuration(90)
-                .setInterpolator(android.view.animation.DecelerateInterpolator())
-                .withEndAction {
-                    it.animate()
-                        .scaleX(1f).scaleY(1f)
-                        .setDuration(220)
-                        .setInterpolator(android.view.animation.OvershootInterpolator(2.5f))
-                        .start()
-                }.start()
+            animaPressioneConMolla(it)
             cercaTreno()
         }
 
@@ -243,6 +236,35 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Errore di rete. Riprova.", Toast.LENGTH_LONG).show()
                 }
             }
+        }
+    }
+
+    /**
+     * Anima la pressione di una view con un vero sistema fisico a molla
+     * (Material 3 Expressive motion physics), invece di interpolatori
+     * a curva fissa. La view si comprime leggermente al tocco e torna
+     * alla scala originale con un rimbalzo naturale.
+     */
+    private fun animaPressioneConMolla(view: android.view.View) {
+        view.scaleX = 0.92f
+        view.scaleY = 0.92f
+
+        val springX = SpringForce(1f).apply {
+            stiffness = SpringForce.STIFFNESS_MEDIUM
+            dampingRatio = SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY
+        }
+        val springY = SpringForce(1f).apply {
+            stiffness = SpringForce.STIFFNESS_MEDIUM
+            dampingRatio = SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY
+        }
+
+        SpringAnimation(view, DynamicAnimation.SCALE_X).apply {
+            spring = springX
+            start()
+        }
+        SpringAnimation(view, DynamicAnimation.SCALE_Y).apply {
+            spring = springY
+            start()
         }
     }
 
