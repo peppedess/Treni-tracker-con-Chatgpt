@@ -78,6 +78,10 @@ class TrainCheckWorker(
                 val variazioneSignificativa = ritardoPrecedente == null ||
                     kotlin.math.abs(ritardoAttuale - ritardoPrecedente) >= SOGLIA_VARIAZIONE_RITARDO
 
+                // Avanzamento del percorso: quante fermate sono già state passate sul totale
+                val totaleFermate = stato.fermate.size.takeIf { it > 0 }
+                val indiceFermataCorrente = stato.fermate.count { it.passata }.takeIf { totaleFermate != null }
+
                 if (cambioStazione || variazioneSignificativa) {
                     val corpo = costruisciMessaggio(ultimaStazioneRilevata, ritardoAttuale)
                     Notifier.notifica(
@@ -86,7 +90,7 @@ class TrainCheckWorker(
                         "Treno ${treno.numeroTreno}",
                         corpo
                     )
-                    dao.aggiornaStato(treno.id, ritardoAttuale, ultimaStazioneRilevata)
+                    dao.aggiornaStato(treno.id, ritardoAttuale, ultimaStazioneRilevata, indiceFermataCorrente, totaleFermate)
                 }
 
                 // Se l'ultima fermata della corsa è stata raggiunta ed è la destinazione, fine monitoraggio

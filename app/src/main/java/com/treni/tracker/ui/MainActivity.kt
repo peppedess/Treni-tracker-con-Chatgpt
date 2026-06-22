@@ -69,10 +69,12 @@ class MainActivity : AppCompatActivity() {
             binding.recyclerTreni.translationY = 30f
             binding.recyclerTreni.animate().alpha(1f).translationY(0f).setDuration(350).start()
             binding.emptyState.visibility = if (treni.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+            aggiornaDashboard(treni)
         }
 
         dao.osservaPreferiti().observe(this) { preferiti ->
             mostraPreferiti(preferiti)
+            aggiornaDashboard(adapter.treniCorrenti())
         }
 
         binding.btnCerca.setOnClickListener {
@@ -244,6 +246,24 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Annulla", null)
             .show()
+    }
+
+    private fun aggiornaDashboard(treni: List<TrenoMonitorato>) {
+        val totale = treni.size
+        val inRitardo = treni.count { (it.ultimoRitardo ?: 0) > 0 }
+
+        lifecycleScope.launch {
+            val numPreferiti = withContext(Dispatchers.IO) {
+                AppDatabase.getInstance(this@MainActivity).trenoDao().contaTuttiIPreferiti()
+            }
+
+            val testo = when {
+                totale == 0 -> "Nessun treno monitorato al momento"
+                inRitardo == 0 -> "$totale monitorati • Tutti in orario • $numPreferiti preferiti"
+                else -> "$totale monitorati • $inRitardo in ritardo • $numPreferiti preferiti"
+            }
+            binding.textDashboardStats.text = testo
+        }
     }
 
     private fun mostraPreferiti(preferiti: List<com.treni.tracker.data.TrenoPreferito>) {
