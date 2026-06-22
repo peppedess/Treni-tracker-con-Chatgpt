@@ -65,6 +65,9 @@ class MainActivity : AppCompatActivity() {
         val dao = AppDatabase.getInstance(this).trenoDao()
         dao.osservaTreniAttivi().observe(this) { treni ->
             adapter.aggiorna(treni)
+            binding.recyclerTreni.alpha = 0f
+            binding.recyclerTreni.translationY = 30f
+            binding.recyclerTreni.animate().alpha(1f).translationY(0f).setDuration(350).start()
             binding.emptyState.visibility = if (treni.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
         }
 
@@ -72,7 +75,13 @@ class MainActivity : AppCompatActivity() {
             mostraPreferiti(preferiti)
         }
 
-        binding.btnCerca.setOnClickListener { cercaTreno() }
+        binding.btnCerca.setOnClickListener {
+            it.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
+                .withEndAction {
+                    it.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+                }.start()
+            cercaTreno()
+        }
 
         binding.btnTema.setOnClickListener { mostraSceltaTema() }
 
