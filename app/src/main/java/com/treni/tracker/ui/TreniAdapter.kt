@@ -36,6 +36,7 @@ class TreniAdapter(
 
     inner class TrenoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val card: MaterialCardView = itemView.findViewById(R.id.cardTreno)
+        private val contenuto: View = itemView.findViewById(R.id.contenutoCardTreno)
         private val numero: android.widget.TextView = itemView.findViewById(R.id.textNumeroTreno)
         private val tratta: android.widget.TextView = itemView.findViewById(R.id.textTratta)
         private val stato: android.widget.TextView = itemView.findViewById(R.id.textStato)
@@ -49,17 +50,16 @@ class TreniAdapter(
             tratta.text = "${treno.stazionePartenzaNome} → ${treno.stazioneDestinazioneNome ?: "?"}"
 
             val ritardo = treno.ultimoRitardo
-            val (bgColorRes, onColorRes, testoCompatto) = when {
-                ritardo == null -> Triple(R.color.card_pending_bg, R.color.card_pending_on, "In attesa")
-                ritardo > 0 -> Triple(R.color.card_late_bg, R.color.card_late_on, "+$ritardo min")
-                ritardo < 0 -> Triple(R.color.card_early_bg, R.color.card_early_on, "$ritardo min")
-                else -> Triple(R.color.card_ontime_bg, R.color.card_ontime_on, "In orario")
+            val (gradientRes, onColorRes, testoCompatto) = when {
+                ritardo == null -> Triple(R.drawable.gradient_card_pending, R.color.card_pending_on, "In attesa")
+                ritardo > 0 -> Triple(R.drawable.gradient_card_late, R.color.card_late_on, "+$ritardo min")
+                ritardo < 0 -> Triple(R.drawable.gradient_card_early, R.color.card_early_on, "$ritardo min")
+                else -> Triple(R.drawable.gradient_card_ontime, R.color.card_ontime_on, "In orario")
             }
 
-            val bgColor = ContextCompat.getColor(context, bgColorRes)
             val onColor = ContextCompat.getColor(context, onColorRes)
 
-            card.setCardBackgroundColor(bgColor)
+            contenuto.setBackgroundResource(gradientRes)
             numero.setTextColor(onColor)
             statoCompatto.setTextColor(onColor)
             tratta.setTextColor(onColor)

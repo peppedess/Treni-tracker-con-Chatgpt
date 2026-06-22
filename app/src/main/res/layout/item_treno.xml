@@ -5,15 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/space_md"
-    app:cardElevation="0dp"
+    app:cardElevation="3dp"
     app:strokeWidth="0dp"
-    app:cardBackgroundColor="@color/card_pending_bg"
+    app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="@dimen/radius_lg">
 
     <LinearLayout
+        android:id="@+id/contenutoCardTreno"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="@drawable/gradient_card_pending"
         android:padding="@dimen/space_lg">
 
         <LinearLayout

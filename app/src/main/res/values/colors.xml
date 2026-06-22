@@ -40,4 +40,20 @@
     <color name="status_late">#D9534F</color>
     <color name="status_early">#4768D9</color>
     <color name="status_pending_grey">#9991B8</color>
+
+    <!-- Gradient per superfici con profondità (card di ricerca, header decorativo) -->
+    <color name="grad_primary_start">#6B7FF0</color>
+    <color name="grad_primary_end">#8B6FE0</color>
+
+    <color name="grad_late_start">#FBD8D2</color>
+    <color name="grad_late_end">#F5C2C8</color>
+
+    <color name="grad_ontime_start">#D3F2DE</color>
+    <color name="grad_ontime_end">#B8EAD0</color>
+
+    <color name="grad_early_start">#D7E3FC</color>
+    <color name="grad_early_end">#C2D4FA</color>
+
+    <color name="grad_pending_start">#EAE6F5</color>
+    <color name="grad_pending_end">#DCD4F0</color>
 </resources>

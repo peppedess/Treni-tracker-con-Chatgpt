@@ -66,8 +66,13 @@ class MainActivity : AppCompatActivity() {
         dao.osservaTreniAttivi().observe(this) { treni ->
             adapter.aggiorna(treni)
             binding.recyclerTreni.alpha = 0f
-            binding.recyclerTreni.translationY = 30f
-            binding.recyclerTreni.animate().alpha(1f).translationY(0f).setDuration(350).start()
+            binding.recyclerTreni.translationY = 40f
+            binding.recyclerTreni.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(420)
+                .setInterpolator(android.view.animation.OvershootInterpolator(0.8f))
+                .start()
             binding.emptyState.visibility = if (treni.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
             aggiornaDashboard(treni)
         }
@@ -78,9 +83,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnCerca.setOnClickListener {
-            it.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100)
+            it.animate()
+                .scaleX(0.93f).scaleY(0.93f)
+                .setDuration(90)
+                .setInterpolator(android.view.animation.DecelerateInterpolator())
                 .withEndAction {
-                    it.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+                    it.animate()
+                        .scaleX(1f).scaleY(1f)
+                        .setDuration(220)
+                        .setInterpolator(android.view.animation.OvershootInterpolator(2.5f))
+                        .start()
                 }.start()
             cercaTreno()
         }

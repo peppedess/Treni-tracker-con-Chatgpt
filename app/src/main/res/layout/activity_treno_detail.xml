@@ -17,15 +17,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/space_lg"
-        app:cardElevation="0dp"
+        app:cardElevation="4dp"
         app:strokeWidth="0dp"
-        app:cardBackgroundColor="?attr/colorPrimaryContainer"
-        app:cardCornerRadius="@dimen/radius_md">
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="40dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:background="@drawable/gradient_card_detail"
             android:padding="@dimen/space_lg"
             android:gravity="center_vertical">
 
@@ -40,7 +41,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     style="@style/TT.Body"
-                    android:textColor="?attr/colorOnPrimaryContainer" />
+                    android:textColor="@android:color/white" />
 
                 <TextView
                     android:id="@+id/textRitardoGlobale"
@@ -48,7 +49,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_sm"
                     style="@style/TT.Headline"
-                    android:textColor="?attr/colorOnPrimaryContainer" />
+                    android:textColor="@android:color/white" />
 
             </LinearLayout>
 
@@ -58,7 +59,7 @@
                 android:layout_height="48dp"
                 android:src="@drawable/ic_share"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="?attr/colorOnPrimaryContainer"
+                app:tint="@android:color/white"
                 android:contentDescription="@string/condividi" />
 
             <ImageButton
@@ -67,7 +68,7 @@
                 android:layout_height="48dp"
                 android:src="@drawable/ic_star_outline"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="?attr/colorOnPrimaryContainer"
+                app:tint="@android:color/white"
                 android:contentDescription="@string/aggiungi_preferito" />
 
         </LinearLayout>
