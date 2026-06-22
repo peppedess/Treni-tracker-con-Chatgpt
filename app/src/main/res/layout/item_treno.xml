@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+ xmlns:app="http://schemas.android.com/apk/res-auto"
+ android:id="@+id/cardTreno"
+ android:layout_width="match_parent"
+ android:layout_height="wrap_content"
+ android:layout_marginBottom="12dp"
+ app:cardCornerRadius="24dp">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+<TextView android:id="@+id/textNumeroTreno" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"/>
+<TextView android:id="@+id/textStatoCompatto" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+<ImageButton android:id="@+id/btnRimuovi" android:layout_width="36dp" android:layout_height="36dp"/>
+</LinearLayout>
+<TextView android:id="@+id/textTratta" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+<com.google.android.material.progressindicator.LinearProgressIndicator android:id="@+id/progressPercorso" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"/>
+<TextView android:id="@+id/textStato" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+<TextView android:id="@+id/textUltimoAggiornamento" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Aggiornato ora"/>
+</LinearLayout></com.google.android.material.card.MaterialCardView>
