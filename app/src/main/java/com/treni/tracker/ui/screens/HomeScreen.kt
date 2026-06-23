@@ -154,9 +154,20 @@ fun HomeScreen(
                     Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Treni Tracker",
-                                style = MaterialTheme.typography.displaySmall,
-                                color = MaterialTheme.colorScheme.onSurface
+                                text = androidx.compose.ui.text.buildAnnotatedString {
+                                    withStyle(
+                                        androidx.compose.ui.text.SpanStyle(color = extraColors.gradPrimaryStart)
+                                    ) {
+                                        append("Treni")
+                                    }
+                                    append(" ")
+                                    withStyle(
+                                        androidx.compose.ui.text.SpanStyle(color = extraColors.gradPrimaryEnd)
+                                    ) {
+                                        append("Tracker")
+                                    }
+                                },
+                                style = MaterialTheme.typography.displaySmall
                             )
                             Text(
                                 text = "Monitoraggio live • Stato rete",
