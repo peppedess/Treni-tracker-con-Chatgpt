@@ -16,6 +16,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.treni.tracker.R
 import com.treni.tracker.notification.Notifier
 import com.treni.tracker.ui.screens.HomeScreen
 import com.treni.tracker.ui.theme.TreniTrackerTheme
@@ -50,9 +51,11 @@ class MainActivity : ComponentActivity() {
                             putExtra(TrenoDetailActivity.EXTRA_TIMESTAMP_MS, timestamp)
                         }
                         startActivity(intent)
+                        overridePendingTransition(R.anim.slide_up_enter, R.anim.scale_down_exit)
                     },
                     onApriRicercaTratta = {
                         startActivity(Intent(this, RicercaTrattaActivity::class.java))
+                        overridePendingTransition(R.anim.slide_up_enter, R.anim.scale_down_exit)
                     },
                     onApriSceltaTema = { mostraSceltaTema() }
                 )

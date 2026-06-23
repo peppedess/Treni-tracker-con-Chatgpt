@@ -3,6 +3,7 @@ package com.treni.tracker.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.treni.tracker.R
 import com.treni.tracker.ui.screens.TrenoDetailScreen
 import com.treni.tracker.ui.theme.TreniTrackerTheme
 
@@ -34,7 +35,10 @@ class TrenoDetailActivity : ComponentActivity() {
                     stazionePartenzaNome = stazionePartenzaNome,
                     stazioneDestinazioneNome = stazioneDestinazioneNome,
                     timestampMs = timestampMs,
-                    onIndietro = { finish() }
+                    onIndietro = {
+                        finish()
+                        overridePendingTransition(R.anim.scale_up_enter, R.anim.slide_down_exit)
+                    }
                 )
             }
         }

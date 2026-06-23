@@ -3,6 +3,7 @@ package com.treni.tracker.ui
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.treni.tracker.R
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.treni.tracker.data.AppDatabase
@@ -38,7 +39,10 @@ class RicercaTrattaActivity : AppCompatActivity() {
             insets
         }
 
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+            overridePendingTransition(R.anim.scale_up_enter, R.anim.slide_down_exit)
+        }
 
         partenzeAdapter = PartenzeAdapter(emptyList()) { partenza -> aggiungiTreno(partenza) }
         binding.recyclerPartenze.layoutManager = LinearLayoutManager(this)
@@ -134,6 +138,7 @@ class RicercaTrattaActivity : AppCompatActivity() {
                     }
                     Toast.makeText(this@RicercaTrattaActivity, "Treno ${partenza.numeroTreno} aggiunto al monitoraggio", Toast.LENGTH_SHORT).show()
                     finish()
+                    overridePendingTransition(R.anim.scale_up_enter, R.anim.slide_down_exit)
                 }
                 else -> {
                     Toast.makeText(this@RicercaTrattaActivity, "Impossibile aggiungere questo treno ora.", Toast.LENGTH_LONG).show()

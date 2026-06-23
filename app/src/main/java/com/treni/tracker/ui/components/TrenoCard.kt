@@ -109,8 +109,13 @@ fun TrenoCard(
             val totale = treno.numeroFermateTotali
             val indice = treno.indiceFermataCorrente
             if (totale != null && totale > 0 && indice != null) {
+                val progressoAnimato by androidx.compose.animation.core.animateFloatAsState(
+                    targetValue = indice.toFloat() / totale.toFloat(),
+                    animationSpec = androidx.compose.animation.core.tween(durationMillis = 600),
+                    label = "progressoPercorso"
+                )
                 LinearProgressIndicator(
-                    progress = { indice.toFloat() / totale.toFloat() },
+                    progress = { progressoAnimato },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
