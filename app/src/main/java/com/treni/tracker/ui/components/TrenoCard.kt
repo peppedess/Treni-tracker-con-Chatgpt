@@ -81,6 +81,19 @@ fun TrenoCard(
                     color = stato.onColor,
                     modifier = Modifier.padding(end = 8.dp)
                 )
+                treno.categoria?.let { cat ->
+                    androidx.compose.material3.Surface(
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                        color = stato.onColor.copy(alpha = 0.18f)
+                    ) {
+                        Text(
+                            text = cat,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = stato.onColor,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
+                }
                 androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = stato.testoStato,

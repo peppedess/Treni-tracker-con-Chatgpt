@@ -18,6 +18,7 @@ data class DetailUiState(
     val numeroTreno: String = "",
     val tratta: String = "",
     val testoRitardo: String = "In attesa di aggiornamento",
+    val categoria: String? = null,
     val fermate: List<StopInfo> = emptyList(),
     val giaPreferito: Boolean = false,
     val preferitoAbilitato: Boolean = true,
@@ -159,6 +160,7 @@ class TrenoDetailViewModel(application: Application) : AndroidViewModel(applicat
                     _uiState.value = _uiState.value.copy(
                         caricamento = false,
                         testoRitardo = testoStato,
+                        categoria = stato.categoria,
                         fermate = stato.fermate
                     )
                 }

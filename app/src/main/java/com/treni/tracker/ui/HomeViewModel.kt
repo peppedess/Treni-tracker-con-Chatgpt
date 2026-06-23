@@ -132,7 +132,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         stazionePartenzaNome = candidato.stazionePartenzaNome,
                         stazioneDestinazioneNome = stato.stazioneDestinazione,
                         timestampMs = candidato.timestampMs,
-                        dataCorsa = dataCorsa
+                        dataCorsa = dataCorsa,
+                        categoria = stato.categoria
                     )
 
                     withContext(Dispatchers.IO) { dao.inserisci(treno) }

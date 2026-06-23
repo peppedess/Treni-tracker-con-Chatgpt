@@ -10,6 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import com.treni.tracker.util.ThemeManager
 
 private val LightColors = lightColorScheme(
     primary = LightPrimary,
@@ -53,7 +54,7 @@ private val DarkColors = darkColorScheme(
  */
 @Composable
 fun TreniTrackerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = temaSceltoEScuro(),
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -75,5 +76,21 @@ fun TreniTrackerTheme(
             shapes = TreniShapes,
             content = content
         )
+    }
+}
+
+/**
+ * Determina se il tema attivo è scuro, in base alla scelta salvata
+ * dall'utente (Sistema/Chiaro/Scuro) in ThemeManager — non solo dal
+ * tema di sistema, così la preferenza esplicita viene sempre rispettata.
+ */
+@Composable
+private fun temaSceltoEScuro(): Boolean {
+    val context = LocalContext.current
+    val tema = ThemeManager.leggiTema(context)
+    return when (tema) {
+        ThemeManager.TEMA_CHIARO -> false
+        ThemeManager.TEMA_SCURO -> true
+        else -> isSystemInDarkTheme()
     }
 }

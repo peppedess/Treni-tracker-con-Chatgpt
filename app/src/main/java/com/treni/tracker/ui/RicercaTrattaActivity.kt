@@ -131,7 +131,8 @@ class RicercaTrattaActivity : AppCompatActivity() {
                         stazionePartenzaNome = partenza.nomeStazionePartenza,
                         stazioneDestinazioneNome = stato.stazioneDestinazione ?: partenza.destinazione,
                         timestampMs = partenza.timestampMs,
-                        dataCorsa = dataCorsa
+                        dataCorsa = dataCorsa,
+                        categoria = stato.categoria
                     )
                     withContext(Dispatchers.IO) {
                         AppDatabase.getInstance(this@RicercaTrattaActivity).trenoDao().inserisci(treno)

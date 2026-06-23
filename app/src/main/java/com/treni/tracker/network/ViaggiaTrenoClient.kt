@@ -41,7 +41,8 @@ data class TrainStatus(
     val ritardoMinuti: Int,
     val soppresso: Boolean,
     val ultimaStazioneRilevata: String?,
-    val fermate: List<StopInfo>
+    val fermate: List<StopInfo>,
+    val categoria: String?
 )
 
 data class StazioneAutocomplete(
@@ -158,6 +159,13 @@ class ViaggiaTrenoClient {
 
             val stazioneUltimoRilevamento = obj["stazioneUltimoRilevamento"]?.jsonPrimitive?.contentOrNull
 
+            // Il nome del campo categoria non è documentato ufficialmente: proviamo
+            // le varianti note usate dall'API (categoria è la più comune, ma alcune
+            // risposte usano compTipologiaTreno o tipoTreno)
+            val categoria = obj["categoria"]?.jsonPrimitive?.contentOrNull
+                ?: obj["categoriaDescrizione"]?.jsonPrimitive?.contentOrNull
+                ?: obj["compTipologiaTreno"]?.jsonPrimitive?.contentOrNull
+
             TrainResult.Success(
                 TrainStatus(
                     numero = obj["numeroTreno"]?.jsonPrimitive?.contentOrNull ?: numeroTreno,
@@ -166,7 +174,8 @@ class ViaggiaTrenoClient {
                     ritardoMinuti = ritardo,
                     soppresso = soppresso,
                     ultimaStazioneRilevata = stazioneUltimoRilevamento,
-                    fermate = fermate
+                    fermate = fermate,
+                    categoria = categoria
                 )
             )
         } catch (e: Exception) {

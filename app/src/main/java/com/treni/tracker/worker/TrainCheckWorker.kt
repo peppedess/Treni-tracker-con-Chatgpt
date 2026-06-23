@@ -90,7 +90,7 @@ class TrainCheckWorker(
                         "Treno ${treno.numeroTreno}",
                         corpo
                     )
-                    dao.aggiornaStato(treno.id, ritardoAttuale, ultimaStazioneRilevata, indiceFermataCorrente, totaleFermate)
+                    dao.aggiornaStato(treno.id, ritardoAttuale, ultimaStazioneRilevata, indiceFermataCorrente, totaleFermate, stato.categoria)
                 }
 
                 // Se l'ultima fermata della corsa è stata raggiunta ed è la destinazione, fine monitoraggio

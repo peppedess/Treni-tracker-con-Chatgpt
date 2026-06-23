@@ -18,5 +18,6 @@ data class TrenoMonitorato(
     val ultimaStazioneNotificata: String? = null,
     val indiceFermataCorrente: Int? = null,
     val numeroFermateTotali: Int? = null,
+    val categoria: String? = null,
     val creatoIl: Long = System.currentTimeMillis()
 )
