@@ -1,6 +1,7 @@
 package com.treni.tracker.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,10 +21,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenu
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +50,65 @@ import com.treni.tracker.ui.RicercaTrattaViewModel
 import com.treni.tracker.ui.components.PartenzaCard
 import com.treni.tracker.ui.theme.LocalTreniExtraColors
 
+/**
+ * Campo di testo con suggerimenti "fatti in casa": una lista cliccabile
+ * mostrata sotto il campo quando ci sono suggerimenti disponibili.
+ * Evita ExposedDropdownMenuBox, la cui API è cambiata troppe volte tra
+ * versioni di Material3 per essere usata in sicurezza qui.
+ */
+@Composable
+private fun CampoConSuggerimenti(
+    valore: String,
+    onValoreChange: (String) -> Unit,
+    suggerimenti: List<String>,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = valore,
+            onValueChange = onValoreChange,
+            label = { Text(label) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+
+        if (suggerimenti.isNotEmpty()) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 4.dp
+            ) {
+                Column {
+                    suggerimenti.take(6).forEach { nome ->
+                        Text(
+                            text = nome,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onValoreChange(nome) }
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RicercaTrattaScreen(
@@ -64,8 +121,8 @@ fun RicercaTrattaScreen(
 
     var partenza by remember { mutableStateOf("") }
     var destinazione by remember { mutableStateOf("") }
-    var espansoPartenza by remember { mutableStateOf(false) }
-    var espansoDestinazione by remember { mutableStateOf(false) }
+    var suggerimentiPartenzaVisibili by remember { mutableStateOf(true) }
+    var suggerimentiDestinazioneVisibili by remember { mutableStateOf(true) }
 
     LaunchedEffect(uiState.messaggio) {
         uiState.messaggio?.let {
@@ -112,93 +169,35 @@ fun RicercaTrattaScreen(
                     .background(Brush.linearGradient(listOf(extraColors.gradPrimaryStart, extraColors.gradPrimaryEnd)))
                     .padding(20.dp)
             ) {
-                ExposedDropdownMenuBox(
-                    expanded = espansoPartenza && uiState.suggerimentiPartenza.isNotEmpty(),
-                    onExpandedChange = { espansoPartenza = it }
-                ) {
-                    OutlinedTextField(
-                        value = partenza,
-                        onValueChange = {
-                            partenza = it
-                            espansoPartenza = true
-                            viewModel.aggiornaSuggerimentiPartenza(it)
-                        },
-                        label = { Text("Stazione di partenza") },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                    ExposedDropdownMenu(
-                        expanded = espansoPartenza && uiState.suggerimentiPartenza.isNotEmpty(),
-                        onDismissRequest = { espansoPartenza = false }
-                    ) {
-                        uiState.suggerimentiPartenza.forEach { nome ->
-                            DropdownMenuItem(
-                                text = { Text(nome) },
-                                onClick = {
-                                    partenza = nome
-                                    espansoPartenza = false
-                                }
-                            )
-                        }
-                    }
-                }
+                CampoConSuggerimenti(
+                    valore = partenza,
+                    onValoreChange = {
+                        partenza = it
+                        suggerimentiPartenzaVisibili = true
+                        viewModel.aggiornaSuggerimentiPartenza(it)
+                    },
+                    suggerimenti = if (suggerimentiPartenzaVisibili) uiState.suggerimentiPartenza else emptyList(),
+                    label = "Stazione di partenza"
+                )
 
-                ExposedDropdownMenuBox(
-                    expanded = espansoDestinazione && uiState.suggerimentiDestinazione.isNotEmpty(),
-                    onExpandedChange = { espansoDestinazione = it },
+                CampoConSuggerimenti(
+                    valore = destinazione,
+                    onValoreChange = {
+                        destinazione = it
+                        suggerimentiDestinazioneVisibili = true
+                        viewModel.aggiornaSuggerimentiDestinazione(it)
+                    },
+                    suggerimenti = if (suggerimentiDestinazioneVisibili) uiState.suggerimentiDestinazione else emptyList(),
+                    label = "Stazione di arrivo",
                     modifier = Modifier.padding(top = 16.dp)
-                ) {
-                    OutlinedTextField(
-                        value = destinazione,
-                        onValueChange = {
-                            destinazione = it
-                            espansoDestinazione = true
-                            viewModel.aggiornaSuggerimentiDestinazione(it)
-                        },
-                        label = { Text("Stazione di arrivo") },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                    ExposedDropdownMenu(
-                        expanded = espansoDestinazione && uiState.suggerimentiDestinazione.isNotEmpty(),
-                        onDismissRequest = { espansoDestinazione = false }
-                    ) {
-                        uiState.suggerimentiDestinazione.forEach { nome ->
-                            DropdownMenuItem(
-                                text = { Text(nome) },
-                                onClick = {
-                                    destinazione = nome
-                                    espansoDestinazione = false
-                                }
-                            )
-                        }
-                    }
-                }
+                )
 
                 Button(
-                    onClick = { viewModel.cercaTratta(partenza, destinazione) },
+                    onClick = {
+                        suggerimentiPartenzaVisibili = false
+                        suggerimentiDestinazioneVisibili = false
+                        viewModel.cercaTratta(partenza, destinazione)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
