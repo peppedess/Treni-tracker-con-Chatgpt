@@ -57,8 +57,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.treni.tracker.R
@@ -154,16 +157,12 @@ fun HomeScreen(
                     Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = androidx.compose.ui.text.buildAnnotatedString {
-                                    withStyle(
-                                        androidx.compose.ui.text.SpanStyle(color = extraColors.gradPrimaryStart)
-                                    ) {
+                                text = buildAnnotatedString {
+                                    withStyle(SpanStyle(color = extraColors.gradPrimaryStart)) {
                                         append("Treni")
                                     }
                                     append(" ")
-                                    withStyle(
-                                        androidx.compose.ui.text.SpanStyle(color = extraColors.gradPrimaryEnd)
-                                    ) {
+                                    withStyle(SpanStyle(color = extraColors.gradPrimaryEnd)) {
                                         append("Tracker")
                                     }
                                 },
