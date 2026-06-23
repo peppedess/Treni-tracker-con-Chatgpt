@@ -160,11 +160,17 @@ class ViaggiaTrenoClient {
             val stazioneUltimoRilevamento = obj["stazioneUltimoRilevamento"]?.jsonPrimitive?.contentOrNull
 
             // Il nome del campo categoria non è documentato ufficialmente: proviamo
-            // le varianti note usate dall'API (categoria è la più comune, ma alcune
-            // risposte usano compTipologiaTreno o tipoTreno)
-            val categoria = obj["categoria"]?.jsonPrimitive?.contentOrNull
-                ?: obj["categoriaDescrizione"]?.jsonPrimitive?.contentOrNull
-                ?: obj["compTipologiaTreno"]?.jsonPrimitive?.contentOrNull
+            // Il campo "categoria" è quasi sempre vuoto nelle risposte reali. La sigla
+            // vera (FA, FR, IC, REG, ecc.) è dentro "compNumeroTreno", che contiene
+            // sigla e numero concatenati con uno spazio, es. " FA 8596". Estraiamo
+            // solo la parte di testo non numerica iniziale.
+            val compNumeroTreno = obj["compNumeroTreno"]?.jsonPrimitive?.contentOrNull
+            val categoria = compNumeroTreno
+                ?.trim()
+                ?.substringBefore(" ")
+                ?.takeIf { it.isNotBlank() && it.any { ch -> ch.isLetter() } }
+                ?: obj["categoria"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
+                ?: obj["categoriaDescrizione"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
 
             TrainResult.Success(
                 TrainStatus(

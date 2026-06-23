@@ -81,7 +81,7 @@ fun TrenoCard(
                     color = stato.onColor,
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                treno.categoria?.let { cat ->
+                treno.categoria?.takeIf { it.isNotBlank() }?.let { cat ->
                     androidx.compose.material3.Surface(
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
                         color = stato.onColor.copy(alpha = 0.18f)

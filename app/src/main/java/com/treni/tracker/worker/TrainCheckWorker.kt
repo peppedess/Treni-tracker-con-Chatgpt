@@ -54,7 +54,12 @@ class TrainCheckWorker(
                         applicationContext,
                         treno.id.toInt(),
                         "Treno ${treno.numeroTreno} soppresso",
-                        "Il treno ${treno.numeroTreno} (${treno.stazionePartenzaNome} → ${treno.stazioneDestinazioneNome}) è stato soppresso."
+                        "Il treno ${treno.numeroTreno} (${treno.stazionePartenzaNome} → ${treno.stazioneDestinazioneNome}) è stato soppresso.",
+                        treno.numeroTreno,
+                        treno.stazionePartenzaCod,
+                        treno.stazionePartenzaNome,
+                        treno.stazioneDestinazioneNome,
+                        treno.timestampMs
                     )
                     dao.rimuovi(treno.id)
                     return
@@ -88,7 +93,12 @@ class TrainCheckWorker(
                         applicationContext,
                         treno.id.toInt(),
                         "Treno ${treno.numeroTreno}",
-                        corpo
+                        corpo,
+                        treno.numeroTreno,
+                        treno.stazionePartenzaCod,
+                        treno.stazionePartenzaNome,
+                        treno.stazioneDestinazioneNome,
+                        treno.timestampMs
                     )
                     dao.aggiornaStato(treno.id, ritardoAttuale, ultimaStazioneRilevata, indiceFermataCorrente, totaleFermate, stato.categoria)
                 }
@@ -100,7 +110,12 @@ class TrainCheckWorker(
                         applicationContext,
                         treno.id.toInt(),
                         "Treno ${treno.numeroTreno} arrivato",
-                        "Il treno ${treno.numeroTreno} è arrivato a ${stato.stazioneDestinazione}."
+                        "Il treno ${treno.numeroTreno} è arrivato a ${stato.stazioneDestinazione}.",
+                        treno.numeroTreno,
+                        treno.stazionePartenzaCod,
+                        treno.stazionePartenzaNome,
+                        treno.stazioneDestinazioneNome,
+                        treno.timestampMs
                     )
                     dao.rimuovi(treno.id)
                 }

@@ -102,7 +102,7 @@ fun TrenoDetailScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    uiState.categoria?.let { cat ->
+                    uiState.categoria?.takeIf { it.isNotBlank() }?.let { cat ->
                         androidx.compose.material3.Surface(
                             shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
                             color = Color.White.copy(alpha = 0.22f),
