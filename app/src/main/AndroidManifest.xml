@@ -36,6 +36,7 @@
         <activity
             android:name=".ui.RicercaTrattaActivity"
             android:exported="false"
+            android:theme="@style/Theme.TreniTracker.NoActionBar"
             android:parentActivityName=".ui.MainActivity" />
 
         <receiver

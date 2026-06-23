@@ -31,4 +31,14 @@
         <item name="android:navigationBarColor">?attr/colorSurface</item>
     </style>
 
+    <!-- Variante senza ActionBar di sistema, per le Activity XML/View che
+         disegnano la propria MaterialToolbar nel layout (es. RicercaTrattaActivity).
+         Senza questa variante, il tema base mostra sia l'ActionBar di sistema
+         (con il titolo dell'app letto dal manifest) sia la toolbar custom,
+         causando una doppia barra con doppia freccia indietro. -->
+    <style name="Theme.TreniTracker.NoActionBar" parent="Theme.TreniTracker">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
 </resources>
