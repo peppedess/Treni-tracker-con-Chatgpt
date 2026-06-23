@@ -1,6 +1,7 @@
 package com.treni.tracker.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import com.treni.tracker.data.TrenoPreferito
 /**
  * Chip di un treno preferito: tap per riaggiungerlo, pressione lunga per rimuoverlo.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PreferitoChip(
     preferito: TrenoPreferito,
