@@ -29,6 +29,15 @@ class RicercaTrattaActivity : AppCompatActivity() {
         binding = ActivityRicercaTrattaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Con targetSdk 35 il layout è edge-to-edge di default: applichiamo
+        // manualmente il padding della status bar alla toolbar, altrimenti
+        // il titolo finisce sotto l'orario/le icone di sistema.
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { view, insets ->
+            val statusBarInsets = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+            view.setPadding(view.paddingLeft, statusBarInsets.top, view.paddingRight, view.paddingBottom)
+            insets
+        }
+
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         partenzeAdapter = PartenzeAdapter(emptyList()) { partenza -> aggiungiTreno(partenza) }
