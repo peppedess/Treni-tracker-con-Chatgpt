@@ -79,6 +79,7 @@ import com.treni.tracker.ui.theme.LocalTreniExtraColors
 fun HomeScreen(
     onApriDettaglio: (Long, String, String, String, String?, Long) -> Unit,
     onApriRicercaTratta: () -> Unit,
+    onApriTabellone: () -> Unit,
     onApriSceltaTema: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
@@ -374,6 +375,7 @@ fun HomeScreen(
         BottomNavIsola(
             onHomeClick = { /* già in home */ },
             onTrattaClick = onApriRicercaTratta,
+            onTabelloneClick = onApriTabellone,
             onTemaClick = onApriSceltaTema,
             modifier = Modifier
                 .align(Alignment.BottomCenter)

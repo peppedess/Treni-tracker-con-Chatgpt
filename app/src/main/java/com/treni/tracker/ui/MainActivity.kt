@@ -57,6 +57,10 @@ class MainActivity : ComponentActivity() {
                         startActivity(Intent(this, RicercaTrattaActivity::class.java))
                         overridePendingTransition(R.anim.slide_up_enter, R.anim.scale_down_exit)
                     },
+                    onApriTabellone = {
+                        startActivity(Intent(this, TabelloneActivity::class.java))
+                        overridePendingTransition(R.anim.slide_up_enter, R.anim.scale_down_exit)
+                    },
                     onApriSceltaTema = { mostraSceltaTema() }
                 )
             }

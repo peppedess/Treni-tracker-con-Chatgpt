@@ -28,7 +28,9 @@ data class TrainCandidate(
 
 data class StopInfo(
     val stazione: String,
+    val arrivoTeorico: Long?,
     val arrivoEffettivo: Long?,
+    val partenzaTeorica: Long?,
     val partenzaEffettiva: Long?,
     val ritardo: Int?,
     val passata: Boolean
@@ -56,7 +58,19 @@ data class PartenzaTreno(
     val nomeStazionePartenza: String,
     val destinazione: String,
     val orarioPartenza: String,
-    val timestampMs: Long
+    val timestampMs: Long,
+    val ritardo: Int? = null,
+    val binario: String? = null
+)
+
+data class ArrivoTreno(
+    val numeroTreno: String,
+    val codStazioneArrivo: String,
+    val provenienza: String,
+    val orarioArrivo: String,
+    val timestampMs: Long,
+    val ritardo: Int? = null,
+    val binario: String? = null
 )
 
 sealed class TrainResult<out T> {
@@ -142,13 +156,17 @@ class ViaggiaTrenoClient {
                 for (f in fermateJson) {
                     val fObj = f as JsonObject
                     val stazione = fObj["stazione"]?.jsonPrimitive?.contentOrNull ?: ""
+                    val arrivoTeorico = fObj["arrivo_teorico"]?.jsonPrimitive?.contentOrNull?.toLongOrNull()
                     val arrivoReale = fObj["arrivoReale"]?.jsonPrimitive?.contentOrNull?.toLongOrNull()
+                    val partenzaTeorica = fObj["partenza_teorica"]?.jsonPrimitive?.contentOrNull?.toLongOrNull()
                     val partenzaReale = fObj["partenzaReale"]?.jsonPrimitive?.contentOrNull?.toLongOrNull()
                     val ritardoFermata = fObj["ritardo"]?.jsonPrimitive?.contentOrNull?.toIntOrNull()
                     fermate.add(
                         StopInfo(
                             stazione = stazione,
+                            arrivoTeorico = arrivoTeorico,
                             arrivoEffettivo = arrivoReale,
+                            partenzaTeorica = partenzaTeorica,
                             partenzaEffettiva = partenzaReale,
                             ritardo = ritardoFermata,
                             passata = arrivoReale != null || partenzaReale != null
@@ -258,6 +276,9 @@ class ViaggiaTrenoClient {
                     val destinazione = o["destinazione"]?.jsonPrimitive?.contentOrNull ?: ""
                     val compOrarioPartenza = o["compOrarioPartenza"]?.jsonPrimitive?.contentOrNull ?: ""
                     val oraPartenzaMs = o["orarioPartenza"]?.jsonPrimitive?.contentOrNull?.toLongOrNull() ?: 0L
+                    val ritardoTreno = o["ritardo"]?.jsonPrimitive?.contentOrNull?.toIntOrNull()
+                    val binario = o["binarioProgrammatoPartenzaDescrizione"]?.jsonPrimitive?.contentOrNull
+                        ?: o["binarioEffettivoPartenzaDescrizione"]?.jsonPrimitive?.contentOrNull
 
                     partenze.add(
                         PartenzaTreno(
@@ -266,7 +287,9 @@ class ViaggiaTrenoClient {
                             nomeStazionePartenza = nomeStazione,
                             destinazione = destinazione,
                             orarioPartenza = compOrarioPartenza,
-                            timestampMs = oraPartenzaMs
+                            timestampMs = oraPartenzaMs,
+                            ritardo = ritardoTreno,
+                            binario = binario
                         )
                     )
                 }
@@ -276,6 +299,65 @@ class ViaggiaTrenoClient {
                 TrainResult.NoData("Nessuna partenza nelle prossime ore da $nomeStazione")
             } else {
                 TrainResult.Success(partenze)
+            }
+        } catch (e: Exception) {
+            TrainResult.NetworkError(e.message ?: "Errore di rete")
+        }
+    }
+
+    /**
+     * Tabellone arrivi di una stazione: treni in arrivo nelle prossime ore,
+     * con provenienza, orario e ritardo. Endpoint speculare a "partenze".
+     */
+    fun arriviPerStazione(codStazione: String, nomeStazione: String): TrainResult<List<ArrivoTreno>> {
+        val sdf = java.text.SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT+0200'", java.util.Locale.ENGLISH)
+        val dataOra = sdf.format(java.util.Date())
+        val url = "$BASE_URL/arrivi/$codStazione/$dataOra"
+
+        return try {
+            val request = Request.Builder().url(url).build()
+            val response = client.newCall(request).execute()
+
+            if (!response.isSuccessful) {
+                return TrainResult.NoData("Nessun arrivo disponibile per $nomeStazione")
+            }
+
+            val body = response.body?.string()
+            if (body.isNullOrEmpty() || body.trim() == "[]") {
+                return TrainResult.NoData("Nessun arrivo nelle prossime ore a $nomeStazione")
+            }
+
+            val arr = json.parseToJsonElement(body)
+            val arrivi = mutableListOf<ArrivoTreno>()
+            if (arr is kotlinx.serialization.json.JsonArray) {
+                for (el in arr) {
+                    val o = el as JsonObject
+                    val numTreno = o["numeroTreno"]?.jsonPrimitive?.contentOrNull ?: continue
+                    val provenienza = o["origine"]?.jsonPrimitive?.contentOrNull ?: ""
+                    val compOrarioArrivo = o["compOrarioArrivo"]?.jsonPrimitive?.contentOrNull ?: ""
+                    val oraArrivoMs = o["orarioArrivo"]?.jsonPrimitive?.contentOrNull?.toLongOrNull() ?: 0L
+                    val ritardoTreno = o["ritardo"]?.jsonPrimitive?.contentOrNull?.toIntOrNull()
+                    val binario = o["binarioProgrammatoArrivoDescrizione"]?.jsonPrimitive?.contentOrNull
+                        ?: o["binarioEffettivoArrivoDescrizione"]?.jsonPrimitive?.contentOrNull
+
+                    arrivi.add(
+                        ArrivoTreno(
+                            numeroTreno = numTreno,
+                            codStazioneArrivo = codStazione,
+                            provenienza = provenienza,
+                            orarioArrivo = compOrarioArrivo,
+                            timestampMs = oraArrivoMs,
+                            ritardo = ritardoTreno,
+                            binario = binario
+                        )
+                    )
+                }
+            }
+
+            if (arrivi.isEmpty()) {
+                TrainResult.NoData("Nessun arrivo nelle prossime ore a $nomeStazione")
+            } else {
+                TrainResult.Success(arrivi)
             }
         } catch (e: Exception) {
             TrainResult.NetworkError(e.message ?: "Errore di rete")

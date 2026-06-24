@@ -39,6 +39,11 @@
             android:theme="@style/Theme.TreniTracker.NoActionBar"
             android:parentActivityName=".ui.MainActivity" />
 
+        <activity
+            android:name=".ui.TabelloneActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
+
         <receiver
             android:name=".widget.TrenoWidgetProvider"
             android:exported="false">
