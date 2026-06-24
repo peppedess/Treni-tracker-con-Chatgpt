@@ -109,7 +109,7 @@ fun TabelloneScreen(
                 text = uiState.nomeStazioneSelezionata.orEmpty(),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp, bottom = 8.dp)
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp)
             )
 
             TabRow(selectedTabIndex = tabSelezionata) {
