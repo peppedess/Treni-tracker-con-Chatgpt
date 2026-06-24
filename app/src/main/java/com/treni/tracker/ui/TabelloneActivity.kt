@@ -50,12 +50,28 @@ class TabelloneActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Tenta di ottenere la posizione in due fasi: prima un risultato
+     * immediato (anche impreciso) dall'ultima posizione conosciuta dal
+     * sistema, poi un aggiornamento più fresco tramite il provider
+     * effettivamente abilitato (GPS o rete, secondo cosa è attivo sul
+     * telefono — chiedere a un provider disattivato non risponde mai).
+     */
     private fun richiediPosizione() {
         val locationManager = getSystemService(LocationManager::class.java) ?: return
+
         try {
+            // Fase 1: risultato immediato dall'ultima posizione nota, se esiste
+            val providerImmediato = scegliProviderAttivo(locationManager) ?: return
+            val ultimaNota = locationManager.getLastKnownLocation(providerImmediato)
+            ultimaNota?.let {
+                viewModel.aggiornaStazioniVicine(it.latitude, it.longitude)
+            }
+
+            // Fase 2: aggiornamento più fresco in background
             LocationManagerCompat.getCurrentLocation(
                 locationManager,
-                LocationManager.NETWORK_PROVIDER,
+                providerImmediato,
                 null as androidx.core.os.CancellationSignal?,
                 Executors.newSingleThreadExecutor(),
                 androidx.core.util.Consumer<android.location.Location?> { location ->
@@ -67,6 +83,20 @@ class TabelloneActivity : ComponentActivity() {
         } catch (e: SecurityException) {
             // Permesso revocato nel frattempo: nessuna stazione vicina mostrata,
             // il resto della schermata (recenti, ricerca manuale) resta funzionante.
+        }
+    }
+
+    /**
+     * Sceglie GPS se attivo, altrimenti rete se attiva, altrimenti null.
+     * Chiedere la posizione a un provider disattivato non genera errore
+     * ma semplicemente non risponde mai: è per questo che va verificato
+     * esplicitamente prima di interrogarlo.
+     */
+    private fun scegliProviderAttivo(locationManager: LocationManager): String? {
+        return when {
+            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+            else -> null
         }
     }
 }
