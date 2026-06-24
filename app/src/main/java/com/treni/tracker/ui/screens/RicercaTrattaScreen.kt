@@ -60,6 +60,7 @@ import com.treni.tracker.ui.theme.LocalTreniExtraColors
 private fun CampoConSuggerimenti(
     valore: String,
     onValoreChange: (String) -> Unit,
+    onSuggerimentoScelto: (String) -> Unit,
     suggerimenti: List<String>,
     label: String,
     modifier: Modifier = Modifier
@@ -99,7 +100,7 @@ private fun CampoConSuggerimenti(
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onValoreChange(nome) }
+                                .clickable { onSuggerimentoScelto(nome) }
                                 .padding(horizontal = 16.dp, vertical = 12.dp)
                         )
                     }
@@ -176,6 +177,10 @@ fun RicercaTrattaScreen(
                         suggerimentiPartenzaVisibili = true
                         viewModel.aggiornaSuggerimentiPartenza(it)
                     },
+                    onSuggerimentoScelto = {
+                        partenza = it
+                        suggerimentiPartenzaVisibili = false
+                    },
                     suggerimenti = if (suggerimentiPartenzaVisibili) uiState.suggerimentiPartenza else emptyList(),
                     label = "Stazione di partenza"
                 )
@@ -186,6 +191,10 @@ fun RicercaTrattaScreen(
                         destinazione = it
                         suggerimentiDestinazioneVisibili = true
                         viewModel.aggiornaSuggerimentiDestinazione(it)
+                    },
+                    onSuggerimentoScelto = {
+                        destinazione = it
+                        suggerimentiDestinazioneVisibili = false
                     },
                     suggerimenti = if (suggerimentiDestinazioneVisibili) uiState.suggerimentiDestinazione else emptyList(),
                     label = "Stazione di arrivo",
