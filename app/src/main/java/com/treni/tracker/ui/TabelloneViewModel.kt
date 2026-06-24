@@ -3,6 +3,9 @@ package com.treni.tracker.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.treni.tracker.data.AppDatabase
+import com.treni.tracker.data.StazioneRecente
+import com.treni.tracker.data.stazioniPiuVicine
 import com.treni.tracker.network.ArrivoTreno
 import com.treni.tracker.network.PartenzaTreno
 import com.treni.tracker.network.TrainResult
@@ -19,6 +22,8 @@ data class TabelloneUiState(
     val nomeStazioneSelezionata: String? = null,
     val codStazioneSelezionata: String? = null,
     val suggerimenti: List<String> = emptyList(),
+    val stazioniRecenti: List<String> = emptyList(),
+    val stazioniVicine: List<String> = emptyList(),
     val partenze: List<PartenzaTreno> = emptyList(),
     val arrivi: List<ArrivoTreno> = emptyList(),
     val caricamento: Boolean = false,
@@ -28,6 +33,7 @@ data class TabelloneUiState(
 class TabelloneViewModel(application: Application) : AndroidViewModel(application) {
 
     private val client = ViaggiaTrenoClient()
+    private val stazioneRecenteDao = AppDatabase.getInstance(application).stazioneRecenteDao()
 
     private val _uiState = MutableStateFlow(TabelloneUiState())
     val uiState: StateFlow<TabelloneUiState> = _uiState
@@ -35,8 +41,29 @@ class TabelloneViewModel(application: Application) : AndroidViewModel(applicatio
     private var jobAutocomplete: Job? = null
     private var jobAutoRefresh: Job? = null
 
+    init {
+        caricaStazioniRecenti()
+    }
+
     fun consumaMessaggio() {
         _uiState.value = _uiState.value.copy(messaggio = null)
+    }
+
+    private fun caricaStazioniRecenti() {
+        viewModelScope.launch {
+            val recenti = withContext(Dispatchers.IO) { stazioneRecenteDao.recenti() }
+            _uiState.value = _uiState.value.copy(stazioniRecenti = recenti.map { it.nome })
+        }
+    }
+
+    /**
+     * Calcola le stazioni principali più vicine alla posizione fornita.
+     * La posizione viene letta dalla UI (che gestisce il permesso runtime);
+     * il ViewModel si limita a usarla per il calcolo, senza occuparsi
+     * direttamente di permessi o sensori di sistema.
+     */
+    fun aggiornaStazioniVicine(lat: Double, lon: Double) {
+        _uiState.value = _uiState.value.copy(stazioniVicine = stazioniPiuVicine(lat, lon))
     }
 
     fun aggiornaSuggerimenti(testo: String) {
@@ -59,6 +86,11 @@ class TabelloneViewModel(application: Application) : AndroidViewModel(applicatio
             nomeStazioneSelezionata = nome,
             suggerimenti = emptyList()
         )
+
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { stazioneRecenteDao.salva(StazioneRecente(nome = nome)) }
+            caricaStazioniRecenti()
+        }
 
         jobAutoRefresh?.cancel()
         viewModelScope.launch {

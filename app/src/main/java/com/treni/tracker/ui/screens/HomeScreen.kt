@@ -204,7 +204,8 @@ fun HomeScreen(
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
                     Surface(
@@ -340,7 +341,6 @@ fun HomeScreen(
                     items(uiState.treni, key = { it.id }) { treno ->
                         Box(
                             modifier = Modifier
-                                .padding(bottom = 12.dp)
                                 .animateItem(
                                     fadeInSpec = androidx.compose.animation.core.tween(220),
                                     placementSpec = spring(
@@ -376,7 +376,6 @@ fun HomeScreen(
             onHomeClick = { /* già in home */ },
             onTrattaClick = onApriRicercaTratta,
             onTabelloneClick = onApriTabellone,
-            onTemaClick = onApriSceltaTema,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 24.dp)

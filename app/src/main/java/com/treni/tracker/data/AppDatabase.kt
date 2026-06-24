@@ -6,13 +6,14 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [TrenoMonitorato::class, TrenoPreferito::class, RilevamentoStorico::class],
-    version = 4,
+    entities = [TrenoMonitorato::class, TrenoPreferito::class, RilevamentoStorico::class, StazioneRecente::class],
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun trenoDao(): TrenoDao
+    abstract fun stazioneRecenteDao(): StazioneRecenteDao
 
     companion object {
         @Volatile

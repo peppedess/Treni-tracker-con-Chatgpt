@@ -1,6 +1,7 @@
 package com.treni.tracker.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -160,17 +161,78 @@ fun TabelloneScreen(
                 }
             }
         } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
             ) {
-                Text(
-                    text = "Cerca una stazione per vedere partenze e arrivi in tempo reale.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (uiState.stazioniVicine.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Stazioni vicine a te",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+                        )
+                    }
+                    items(uiState.stazioniVicine) { nome ->
+                        Text(
+                            text = nome,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    testoStazione = nome
+                                    viewModel.selezionaStazione(nome)
+                                }
+                                .padding(vertical = 12.dp)
+                        )
+                        HorizontalDivider()
+                    }
+                }
+
+                if (uiState.stazioniRecenti.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Cercate di recente",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                        )
+                    }
+                    items(uiState.stazioniRecenti) { nome ->
+                        Text(
+                            text = nome,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    testoStazione = nome
+                                    viewModel.selezionaStazione(nome)
+                                }
+                                .padding(vertical = 12.dp)
+                        )
+                        HorizontalDivider()
+                    }
+                }
+
+                if (uiState.stazioniVicine.isEmpty() && uiState.stazioniRecenti.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Cerca una stazione per vedere partenze e arrivi in tempo reale.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
             }
         }
     }

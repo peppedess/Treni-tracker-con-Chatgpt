@@ -7,7 +7,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,7 +27,6 @@ fun BottomNavIsola(
     onHomeClick: () -> Unit,
     onTrattaClick: () -> Unit,
     onTabelloneClick: () -> Unit,
-    onTemaClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -85,18 +83,6 @@ fun BottomNavIsola(
                 Icon(
                     Icons.Filled.List,
                     contentDescription = "Tabellone stazione",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .clickable { onTemaClick() }
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-            ) {
-                Icon(
-                    Icons.Filled.WbSunny,
-                    contentDescription = "Cambia tema",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
