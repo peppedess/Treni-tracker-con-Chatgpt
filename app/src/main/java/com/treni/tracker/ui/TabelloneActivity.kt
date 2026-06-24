@@ -56,7 +56,7 @@ class TabelloneActivity : ComponentActivity() {
             LocationManagerCompat.getCurrentLocation(
                 locationManager,
                 LocationManager.NETWORK_PROVIDER,
-                null,
+                null as androidx.core.os.CancellationSignal?,
                 Executors.newSingleThreadExecutor(),
                 androidx.core.util.Consumer<android.location.Location?> { location ->
                     location?.let {
