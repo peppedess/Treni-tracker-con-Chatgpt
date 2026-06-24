@@ -57,12 +57,13 @@ class TabelloneActivity : ComponentActivity() {
                 locationManager,
                 LocationManager.NETWORK_PROVIDER,
                 null,
-                Executors.newSingleThreadExecutor()
-            ) { location ->
-                location?.let {
-                    viewModel.aggiornaStazioniVicine(it.latitude, it.longitude)
+                Executors.newSingleThreadExecutor(),
+                androidx.core.util.Consumer<android.location.Location?> { location ->
+                    location?.let {
+                        viewModel.aggiornaStazioniVicine(it.latitude, it.longitude)
+                    }
                 }
-            }
+            )
         } catch (e: SecurityException) {
             // Permesso revocato nel frattempo: nessuna stazione vicina mostrata,
             // il resto della schermata (recenti, ricerca manuale) resta funzionante.
