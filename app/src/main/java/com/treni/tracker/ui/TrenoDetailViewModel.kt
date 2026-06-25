@@ -14,6 +14,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+data class StatisticheTreno(
+    val numCorse: Int,
+    val ritardoMedio: Double,
+    val percentualeRitardo: Int
+)
+
 data class DetailUiState(
     val numeroTreno: String = "",
     val tratta: String = "",
@@ -22,7 +28,7 @@ data class DetailUiState(
     val fermate: List<StopInfo> = emptyList(),
     val giaPreferito: Boolean = false,
     val preferitoAbilitato: Boolean = true,
-    val testoStatistiche: String? = null,
+    val statistiche: StatisticheTreno? = null,
     val caricamento: Boolean = false,
     val messaggio: String? = null
 )
@@ -123,7 +129,7 @@ class TrenoDetailViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             val ritardi = withContext(Dispatchers.IO) { dao.getRitardiPerCorsa(numeroTreno) }
             if (ritardi.isEmpty()) {
-                _uiState.value = _uiState.value.copy(testoStatistiche = null)
+                _uiState.value = _uiState.value.copy(statistiche = null)
                 return@launch
             }
             val numCorse = ritardi.size
@@ -131,10 +137,13 @@ class TrenoDetailViewModel(application: Application) : AndroidViewModel(applicat
             val corseInRitardo = ritardi.count { it.ritardoMax >= 5 }
             val percentualeRitardo = (corseInRitardo * 100) / numCorse
 
-            val testo = "Su $numCorse corse monitorate:\n" +
-                "• Ritardo medio: ${"%.1f".format(ritardoMedio)} min\n" +
-                "• In ritardo (≥5 min): $percentualeRitardo% delle volte"
-            _uiState.value = _uiState.value.copy(testoStatistiche = testo)
+            _uiState.value = _uiState.value.copy(
+                statistiche = StatisticheTreno(
+                    numCorse = numCorse,
+                    ritardoMedio = ritardoMedio,
+                    percentualeRitardo = percentualeRitardo
+                )
+            )
         }
     }
 

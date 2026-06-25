@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.treni.tracker.ui.TrenoDetailViewModel
+import com.treni.tracker.ui.components.CardStoricoRitardi
 import com.treni.tracker.ui.components.FermataRow
 import com.treni.tracker.ui.theme.LocalTreniExtraColors
 
@@ -152,28 +153,11 @@ fun TrenoDetailScreen(
             }
         }
 
-        uiState.testoStatistiche?.let { testo ->
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "STORICO RITARDI",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = testo,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-            }
+        uiState.statistiche?.let { statistiche ->
+            CardStoricoRitardi(
+                statistiche = statistiche,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+            )
         }
 
         if (uiState.caricamento) {
