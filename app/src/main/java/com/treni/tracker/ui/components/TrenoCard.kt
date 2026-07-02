@@ -1,6 +1,18 @@
 package com.treni.tracker.ui.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,12 +28,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.treni.tracker.data.TrenoMonitorato
 import com.treni.tracker.ui.theme.LocalTreniExtraColors
@@ -48,6 +62,12 @@ private fun statoVisivoPer(ritardo: Int?): StatoVisivo {
  * Card di un treno monitorato: sfondo gradient pieno coordinato allo stato
  * (ritardo/anticipo/in orario/in attesa), numero treno, tratta, stato compatto,
  * e barra di avanzamento del percorso se i dati sono disponibili.
+ *
+ * Tocchi espressivi:
+ * - "squish" elastico alla pressione (scala con molla)
+ * - i colori del gradiente sfumano dolcemente quando lo stato cambia
+ *   (es. da "in orario" a ritardo) invece di scattare
+ * - il testo dello stato scorre verso l'alto come un contatore quando cambia
  */
 @Composable
 fun TrenoCard(
@@ -59,16 +79,40 @@ fun TrenoCard(
     val stato = statoVisivoPer(treno.ultimoRitardo)
     val shape = RoundedCornerShape(28.dp)
 
+    // Transizione morbida dei colori quando lo stato del treno cambia
+    val mollaColore = spring<Color>(stiffness = Spring.StiffnessLow)
+    val gradStart by animateColorAsState(stato.gradStart, mollaColore, label = "gradStart")
+    val gradEnd by animateColorAsState(stato.gradEnd, mollaColore, label = "gradEnd")
+    val coloreTesto by animateColorAsState(stato.onColor, mollaColore, label = "onColor")
+
+    // Squish elastico alla pressione
+    val interactionSource = remember { MutableInteractionSource() }
+    val premuta by interactionSource.collectIsPressedAsState()
+    val scala by animateFloatAsState(
+        targetValue = if (premuta) 0.97f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "scalaCard"
+    )
+
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = scala
+                scaleY = scala
+            },
         shape = shape,
         shadowElevation = 3.dp,
         color = Color.Transparent,
-        onClick = onClick
+        onClick = onClick,
+        interactionSource = interactionSource
     ) {
         Column(
             modifier = Modifier
-                .background(Brush.linearGradient(listOf(stato.gradStart, stato.gradEnd)))
+                .background(Brush.linearGradient(listOf(gradStart, gradEnd)))
                 .padding(20.dp)
         ) {
             Row(
@@ -78,37 +122,47 @@ fun TrenoCard(
                 Text(
                     text = treno.numeroTreno,
                     style = MaterialTheme.typography.titleLarge,
-                    color = stato.onColor,
+                    color = coloreTesto,
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 treno.categoria?.takeIf { it.isNotBlank() }?.let { cat ->
                     androidx.compose.material3.Surface(
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                        color = stato.onColor.copy(alpha = 0.18f)
+                        color = coloreTesto.copy(alpha = 0.18f)
                     ) {
                         Text(
                             text = cat,
                             style = MaterialTheme.typography.labelMedium,
-                            color = stato.onColor,
+                            color = coloreTesto,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
                 }
                 androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = stato.testoStato,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = stato.onColor
-                )
+                // Il testo dello stato scorre come un contatore quando cambia
+                AnimatedContent(
+                    targetState = stato.testoStato,
+                    transitionSpec = {
+                        (fadeIn() + slideInVertically { altezza -> altezza / 2 }) togetherWith
+                            (fadeOut() + slideOutVertically { altezza -> -altezza / 2 })
+                    },
+                    label = "testoStato"
+                ) { testo ->
+                    Text(
+                        text = testo,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = coloreTesto
+                    )
+                }
                 IconButton(onClick = onRimuovi) {
-                    Icon(Icons.Filled.Close, contentDescription = "Rimuovi", tint = stato.onColor)
+                    Icon(Icons.Filled.Close, contentDescription = "Rimuovi", tint = coloreTesto)
                 }
             }
 
             Text(
                 text = "${treno.stazionePartenzaNome} → ${treno.stazioneDestinazioneNome ?: "?"}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = stato.onColor.copy(alpha = 0.8f),
+                color = coloreTesto.copy(alpha = 0.8f),
                 modifier = Modifier.padding(top = 4.dp)
             )
 
@@ -116,7 +170,7 @@ fun TrenoCard(
                 text = treno.ultimaStazioneNotificata?.let { "Ultima fermata rilevata: $it" }
                     ?: "In attesa del primo aggiornamento…",
                 style = MaterialTheme.typography.labelMedium,
-                color = stato.onColor.copy(alpha = 0.8f),
+                color = coloreTesto.copy(alpha = 0.8f),
                 modifier = Modifier.padding(top = 10.dp)
             )
 
@@ -134,8 +188,8 @@ fun TrenoCard(
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = stato.onColor,
-                    trackColor = stato.onColor.copy(alpha = 0.2f),
+                    color = coloreTesto,
+                    trackColor = coloreTesto.copy(alpha = 0.2f),
                     strokeCap = StrokeCap.Round
                 )
             }
