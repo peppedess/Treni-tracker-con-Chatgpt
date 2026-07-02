@@ -4,7 +4,6 @@ import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -55,8 +54,9 @@ private val DarkColors = darkColorScheme(
  * con fallback sulla palette statica sulle versioni precedenti o se
  * l'utente disattiva il colore dinamico.
  *
- * MotionScheme.expressive() rende le animazioni di tutti i componenti
- * Material 3 (bottom bar, pulsanti, dialoghi, progress...) piu'
+ * MaterialExpressiveTheme applica di default lo schema di movimento
+ * espressivo: le animazioni di tutti i componenti Material 3
+ * (bottom bar, pulsanti, dialoghi, progress...) diventano piu'
  * "molleggiate" e vive, senza dover toccare le singole schermate.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -80,7 +80,6 @@ fun TreniTrackerTheme(
     CompositionLocalProvider(LocalTreniExtraColors provides extraColors) {
         MaterialExpressiveTheme(
             colorScheme = colorScheme,
-            motionScheme = MotionScheme.expressive(),
             typography = TreniTypography,
             shapes = TreniShapes,
             content = content
