@@ -42,12 +42,14 @@ kotlin {
 }
 
 dependencies {
-    // Compose: BOM stabile di dicembre 2025 (Material 3 1.4.x con API Expressive stabili)
+    // Compose: BOM stabile di dicembre 2025 + material3 fissato a 1.5.0-alpha11
+    // (le API Expressive sono pubbliche SOLO nelle 1.5.0-alpha; le alpha >= 19 richiedono
+    // AGP 9.1/SDK 37, quindi NON alzare questo pin senza verificare le release note)
     implementation(platform("androidx.compose:compose-bom:2025.12.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3:1.5.0-alpha11")
     // Le icone non sono piu' gestite dal BOM: versione finale fissata esplicitamente
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
