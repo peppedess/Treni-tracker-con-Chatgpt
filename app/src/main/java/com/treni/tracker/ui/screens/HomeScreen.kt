@@ -1,9 +1,15 @@
 package com.treni.tracker.ui.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -27,21 +33,27 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,10 +64,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -73,8 +88,9 @@ import com.treni.tracker.ui.components.BottomNavIsola
 import com.treni.tracker.ui.components.PreferitoChip
 import com.treni.tracker.ui.components.TrenoCard
 import com.treni.tracker.ui.theme.LocalTreniExtraColors
+import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(
     onApriDettaglio: (Long, String, String, String, String?, Long) -> Unit,
@@ -90,6 +106,17 @@ fun HomeScreen(
 
     var numeroTreno by remember { mutableStateOf("") }
     var dialogScelta by remember { mutableStateOf<List<TrainCandidate>?>(null) }
+
+    // Stato locale del pull-to-refresh: l'aggiornamento vero avviene in
+    // background via WorkManager, qui mostriamo l'indicatore per il tempo
+    // necessario a comunicare che la richiesta e' partita.
+    var aggiornamentoRichiesto by remember { mutableStateOf(false) }
+    LaunchedEffect(aggiornamentoRichiesto) {
+        if (aggiornamentoRichiesto) {
+            delay(1800)
+            aggiornamentoRichiesto = false
+        }
+    }
 
     LaunchedEffect(evento) {
         when (val ev = evento) {
@@ -186,7 +213,7 @@ fun HomeScreen(
                 }
             }
 
-            // Dashboard statistiche
+            // Dashboard statistiche: il testo scorre come un contatore quando cambia
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -194,181 +221,249 @@ fun HomeScreen(
                 shape = RoundedCornerShape(12.dp),
                 color = MaterialTheme.colorScheme.primaryContainer
             ) {
-                Text(
-                    text = uiState.testoDashboard,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(14.dp)
-                )
+                AnimatedContent(
+                    targetState = uiState.testoDashboard,
+                    transitionSpec = {
+                        (fadeIn() + slideInVertically { altezza -> altezza / 3 }) togetherWith
+                            (fadeOut() + slideOutVertically { altezza -> -altezza / 3 })
+                    },
+                    label = "testoDashboard"
+                ) { testo ->
+                    Text(
+                        text = testo,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
             }
 
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            // Pull-to-refresh: tirando giu' la lista si richiede un
+            // aggiornamento immediato dei treni monitorati via WorkManager
+            PullToRefreshBox(
+                isRefreshing = aggiornamentoRichiesto,
+                onRefresh = {
+                    aggiornamentoRichiesto = true
+                    viewModel.aggiornaManualmente()
+                },
+                modifier = Modifier.weight(1f)
             ) {
-                item {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(28.dp),
-                        color = Color.Transparent
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(extraColors.gradPrimaryStart, extraColors.gradPrimaryEnd)
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(28.dp),
+                            color = Color.Transparent
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .background(
+                                        Brush.linearGradient(
+                                            listOf(extraColors.gradPrimaryStart, extraColors.gradPrimaryEnd)
+                                        )
+                                    )
+                                    .padding(20.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = numeroTreno,
+                                    onValueChange = { numeroTreno = it },
+                                    label = { Text("Numero treno (es. 2345)") },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                        cursorColor = MaterialTheme.colorScheme.primary
                                     )
                                 )
-                                .padding(20.dp)
-                        ) {
-                            OutlinedTextField(
-                                value = numeroTreno,
-                                onValueChange = { numeroTreno = it },
-                                label = { Text("Numero treno (es. 2345)") },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                    cursorColor = MaterialTheme.colorScheme.primary
+
+                                val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                                val isPressed by interactionSource.collectIsPressedAsState()
+                                val scale by animateFloatAsState(
+                                    targetValue = if (isPressed) 0.94f else 1f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMedium
+                                    ),
+                                    label = "scaleBottoneCerca"
                                 )
-                            )
 
-                            val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                            val isPressed by interactionSource.collectIsPressedAsState()
-                            val scale by animateFloatAsState(
-                                targetValue = if (isPressed) 0.94f else 1f,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessMedium
-                                ),
-                                label = "scaleBottoneCerca"
-                            )
+                                Button(
+                                    onClick = { viewModel.cercaTreno(numeroTreno) },
+                                    interactionSource = interactionSource,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp)
+                                        .height(56.dp)
+                                        .graphicsLayer { scaleX = scale; scaleY = scale },
+                                    shape = RoundedCornerShape(28.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.White,
+                                        contentColor = MaterialTheme.colorScheme.primary
+                                    )
+                                ) {
+                                    Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                                    Text("Cerca", fontWeight = FontWeight.Bold)
+                                }
 
-                            Button(
-                                onClick = { viewModel.cercaTreno(numeroTreno) },
-                                interactionSource = interactionSource,
+                                Text(
+                                    text = "Inserisci il numero del treno di oggi. Se è ambiguo, ti faccio scegliere la corsa giusta.",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
+
+                                AnimatedVisibility(visible = uiState.caricamento) {
+                                    LoadingIndicator(
+                                        color = Color.White,
+                                        modifier = Modifier
+                                            .padding(top = 12.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (uiState.preferiti.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "I tuoi treni preferiti",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 20.dp, bottom = 8.dp)
+                            )
+                        }
+                        item {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            ) {
+                                items(uiState.preferiti, key = { it.id }) { pref: TrenoPreferito ->
+                                    PreferitoChip(
+                                        preferito = pref,
+                                        onClick = { viewModel.riaggiungiDaPreferito(pref) },
+                                        onLongClick = { viewModel.rimuoviPreferito(pref) }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (uiState.treni.isEmpty()) {
+                        item {
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 16.dp)
-                                    .height(56.dp)
-                                    .graphicsLayer { scaleX = scale; scaleY = scale },
-                                shape = RoundedCornerShape(28.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.White,
-                                    contentColor = MaterialTheme.colorScheme.primary
-                                )
+                                    .padding(vertical = 48.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                                Text("Cerca", fontWeight = FontWeight.Bold)
-                            }
-
-                            Text(
-                                text = "Inserisci il numero del treno di oggi. Se è ambiguo, ti faccio scegliere la corsa giusta.",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.White.copy(alpha = 0.85f),
-                                modifier = Modifier.padding(top = 16.dp)
-                            )
-
-                            AnimatedVisibility(visible = uiState.caricamento) {
-                                CircularProgressIndicator(
-                                    color = Color.White,
-                                    modifier = Modifier
-                                        .padding(top = 12.dp)
+                                Icon(
+                                    painterResource(R.drawable.ic_train),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(64.dp).alpha(0.5f)
+                                )
+                                Text(
+                                    text = "Nessun treno monitorato.\nAggiungine uno qui sopra.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = 16.dp)
                                 )
                             }
                         }
-                    }
-                }
-
-                if (uiState.preferiti.isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "I tuoi treni preferiti",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 20.dp, bottom = 8.dp)
-                        )
-                    }
-                    item {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        ) {
-                            items(uiState.preferiti, key = { it.id }) { pref: TrenoPreferito ->
-                                PreferitoChip(
-                                    preferito = pref,
-                                    onClick = { viewModel.riaggiungiDaPreferito(pref) },
-                                    onLongClick = { viewModel.rimuoviPreferito(pref) }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                if (uiState.treni.isEmpty()) {
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 48.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                painterResource(R.drawable.ic_train),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(64.dp).alpha(0.5f)
+                    } else {
+                        items(uiState.treni, key = { it.id }) { treno ->
+                            // Swipe verso sinistra per eliminare, con feedback aptico.
+                            // La X sulla card resta come alternativa.
+                            val haptic = LocalHapticFeedback.current
+                            val statoSwipe = rememberSwipeToDismissBoxState(
+                                confirmValueChange = { valore ->
+                                    if (valore == SwipeToDismissBoxValue.EndToStart) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        viewModel.rimuoviTreno(treno)
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                }
                             )
-                            Text(
-                                text = "Nessun treno monitorato.\nAggiungine uno qui sopra.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 16.dp)
-                            )
-                        }
-                    }
-                } else {
-                    items(uiState.treni, key = { it.id }) { treno ->
-                        Box(
-                            modifier = Modifier
-                                .animateItem(
-                                    fadeInSpec = androidx.compose.animation.core.tween(220),
-                                    placementSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessLow
-                                    ),
-                                    fadeOutSpec = androidx.compose.animation.core.tween(150)
-                                )
-                        ) {
-                            TrenoCard(
-                                treno = treno,
-                                onClick = {
-                                    onApriDettaglio(
-                                        treno.id,
-                                        treno.numeroTreno,
-                                        treno.stazionePartenzaCod,
-                                        treno.stazionePartenzaNome,
-                                        treno.stazioneDestinazioneNome,
-                                        treno.timestampMs
+                            Box(
+                                modifier = Modifier
+                                    .animateItem(
+                                        fadeInSpec = androidx.compose.animation.core.tween(220),
+                                        placementSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessLow
+                                        ),
+                                        fadeOutSpec = androidx.compose.animation.core.tween(150)
                                     )
-                                },
-                                onRimuovi = { viewModel.rimuoviTreno(treno) }
-                            )
+                            ) {
+                                SwipeToDismissBox(
+                                    state = statoSwipe,
+                                    enableDismissFromStartToEnd = false,
+                                    backgroundContent = {
+                                        val scalaIcona by animateFloatAsState(
+                                            targetValue = if (statoSwipe.targetValue == SwipeToDismissBoxValue.EndToStart) 1f else 0.7f,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessMedium
+                                            ),
+                                            label = "scalaIconaElimina"
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(RoundedCornerShape(28.dp))
+                                                .background(MaterialTheme.colorScheme.errorContainer),
+                                            contentAlignment = Alignment.CenterEnd
+                                        ) {
+                                            Icon(
+                                                Icons.Filled.Delete,
+                                                contentDescription = "Elimina",
+                                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                                modifier = Modifier
+                                                    .padding(end = 28.dp)
+                                                    .graphicsLayer {
+                                                        scaleX = scalaIcona
+                                                        scaleY = scalaIcona
+                                                    }
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    TrenoCard(
+                                        treno = treno,
+                                        onClick = {
+                                            onApriDettaglio(
+                                                treno.id,
+                                                treno.numeroTreno,
+                                                treno.stazionePartenzaCod,
+                                                treno.stazionePartenzaNome,
+                                                treno.stazioneDestinazioneNome,
+                                                treno.timestampMs
+                                            )
+                                        },
+                                        onRimuovi = { viewModel.rimuoviTreno(treno) }
+                                    )
+                                }
+                            }
                         }
                     }
-                }
 
-                item { Spacer(modifier = Modifier.height(96.dp)) }
+                    item { Spacer(modifier = Modifier.height(96.dp)) }
+                }
             }
         }
 
