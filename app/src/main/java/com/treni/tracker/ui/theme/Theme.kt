@@ -2,7 +2,9 @@ package com.treni.tracker.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -47,11 +49,17 @@ private val DarkColors = darkColorScheme(
 )
 
 /**
- * Tema principale dell'app. Applica dynamic color su Android 12+
- * (stesso comportamento di DynamicColors.applyToActivitiesIfAvailable
- * usato nella versione View), con fallback sulla palette statica
- * sulle versioni precedenti o se l'utente disattiva il colore dinamico.
+ * Tema principale dell'app, basato su Material 3 Expressive.
+ * Applica dynamic color su Android 12+ (stesso comportamento di
+ * DynamicColors.applyToActivitiesIfAvailable usato nella versione View),
+ * con fallback sulla palette statica sulle versioni precedenti o se
+ * l'utente disattiva il colore dinamico.
+ *
+ * MotionScheme.expressive() rende le animazioni di tutti i componenti
+ * Material 3 (bottom bar, pulsanti, dialoghi, progress...) piu'
+ * "molleggiate" e vive, senza dover toccare le singole schermate.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TreniTrackerTheme(
     darkTheme: Boolean = temaSceltoEScuro(),
@@ -70,8 +78,9 @@ fun TreniTrackerTheme(
     val extraColors = if (darkTheme) DarkExtraColors else LightExtraColors
 
     CompositionLocalProvider(LocalTreniExtraColors provides extraColors) {
-        MaterialTheme(
+        MaterialExpressiveTheme(
             colorScheme = colorScheme,
+            motionScheme = MotionScheme.expressive(),
             typography = TreniTypography,
             shapes = TreniShapes,
             content = content
@@ -80,9 +89,9 @@ fun TreniTrackerTheme(
 }
 
 /**
- * Determina se il tema attivo è scuro, in base alla scelta salvata
+ * Determina se il tema attivo e' scuro, in base alla scelta salvata
  * dall'utente (Sistema/Chiaro/Scuro) in ThemeManager — non solo dal
- * tema di sistema, così la preferenza esplicita viene sempre rispettata.
+ * tema di sistema, cosi' la preferenza esplicita viene sempre rispettata.
  */
 @Composable
 private fun temaSceltoEScuro(): Boolean {
